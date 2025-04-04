@@ -1,0 +1,23 @@
+{
+	"name": "artifacts",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"build": "tsc",
+		"start": "tsc && node dist/main.js",
+		"dev": "tsc && ts-node src/main.ts"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"@types/node": "^22.13.17",
+		"ts-node": "^10.9.2",
+		"typescript": "^5.8.2"
+	},
+	"dependencies": {
+		"axios": "^1.8.4",
+		"dotenv": "^16.4.7"
+	}
+}
