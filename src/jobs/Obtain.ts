@@ -1,15 +1,15 @@
 import http from '../http'
-import { CharacterInterface, ItemInterface } from '../types'
+import { ItemInterface } from '../types'
 import Job from './Job'
 import Craft from './Craft'
+import Character from '../Character'
 import Gather from './Gather'
 
 export default class Obtain extends Job {
 	code: string
 	quantity: number
 	item: ItemInterface | null = null
-	depositObtainedToBank: boolean = false
-	constructor(character: CharacterInterface, code: string, quantity: number) {
+	constructor(character: Character, code: string, quantity: number) {
 		super(character)
 		this.character = character
 		this.code = code

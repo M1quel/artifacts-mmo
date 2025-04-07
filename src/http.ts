@@ -1,6 +1,7 @@
 import axios from 'axios'
-import { CharacterInterface, BankItemTransactionSchema, TaskInterface, ItemInterface, SkillType, MapSchema, CharacterMovementDataSchema, SkillDataSchema } from './types'
+import { CharacterInterface, BankItemTransactionSchema, TaskInterface, ItemInterface, SkillType, MapSchema, CharacterMovementDataSchema, SkillDataSchema, SimpleItemSchema, MonsterSchema } from './types'
 import dotenv from 'dotenv'
+import Character from './Character'
 dotenv.config()
 
 const token = process.env.TOKEN
@@ -33,15 +34,15 @@ async function getCharacter(name: string) {
 	return res.data
 }
 
-async function move(config: { x: number, y: number, character: CharacterInterface }) {
-	const response = await post<CharacterMovementDataSchema>(`/my/${config.character.name}/action/move`, {
-		x: config.x,
-		y: config.y
+async function move(character: Character, x: number, y: number ) {
+	const response = await post<CharacterMovementDataSchema>(`/my/${character.name}/action/move`, {
+		x: x,
+		y: y
 	})
 	return response.data
 }
 
-async function gather(character: CharacterInterface) {
+async function gather(character: Character) {
 	const response = await post<SkillDataSchema>(`/my/${character.name}/action/gathering`)
 	return response.data
 }
@@ -56,7 +57,7 @@ async function getItem(code: string) {
 	return res.data
 }
 
-async function getMapLocation(character: CharacterInterface, code: string, type: string) {
+async function getMapLocation(character: Character, code: string, type: string) {
 	const params: { [key: string]: any } = {}
 	if (code) {
 		params.content_code = code
@@ -73,8 +74,8 @@ async function getMapLocation(character: CharacterInterface, code: string, type:
 	if (res.data.length > 1) {
 		// Find closest location to character
 		const closest = res.data.reduce((prev, curr) => {
-			const prevDist = Math.sqrt(Math.pow(prev.x - character.x, 2) + Math.pow(prev.y - character.y, 2))
-			const currDist = Math.sqrt(Math.pow(curr.x - character.x, 2) + Math.pow(curr.y - character.y, 2))
+			const prevDist = Math.sqrt(Math.pow(prev.x - character.data.x, 2) + Math.pow(prev.y - character.data.y, 2))
+			const currDist = Math.sqrt(Math.pow(curr.x - character.data.x, 2) + Math.pow(curr.y - character.data.y, 2))
 			return (prevDist < currDist) ? prev : curr
 		})
 		return closest
@@ -82,7 +83,7 @@ async function getMapLocation(character: CharacterInterface, code: string, type:
 	return res.data[0]
 }
 
-async function craft(character: CharacterInterface, code: string, quantity: number) {
+async function craft(character: Character, code: string, quantity: number) {
 	const res = await post<SkillDataSchema>(`/my/${character.name}/action/crafting`, {
 		code,
 		quantity
@@ -91,13 +92,57 @@ async function craft(character: CharacterInterface, code: string, quantity: numb
 	return res.data
 }
 
-async function depositToBank(character: CharacterInterface, code: string, quantity: number) {
+async function depositToBank(character: Character, code: string, quantity: number) {
 	const res = await post<BankItemTransactionSchema>(`/my/${character.name}/action/bank/deposit`, {
 		code,
 		quantity
 	})
 	if (!res) { throw new Error('Failed to deposit to bank') }
 	return res.data
+}
+
+async function withdrawFromBank(character: Character, code: string, quantity: number) {
+	const res = await post<BankItemTransactionSchema>(`/my/${character.name}/action/bank/withdraw`, {
+		code,
+		quantity
+	})
+	if (!res) { throw new Error('Failed to withdraw from bank') }
+	return res.data
+}
+
+async function getBankItem(code: string) {
+	const res = await get<{data: SimpleItemSchema[]}>(`/my/bank/items`, {
+		params: {
+			item_code: code
+		}
+	})
+	if (res?.data[0]) {
+		return res.data[0]
+	}
+	return null
+}
+
+async function taskTrade(character: Character, code: string, quantity: number) {
+	const res = await post<SkillDataSchema>(`/my/${character.name}/action/task/trade`, {
+		code,
+		quantity
+	})
+	if (!res) { throw new Error('Failed to trade task item') }
+	return res.data
+}
+
+async function getAllMonsters(opts: {max_level?: number}) {
+	const params: Record<string, any> = {}
+	if (opts.max_level) {
+		params.max_level = opts.max_level
+	}
+	const response = await get<{data: MonsterSchema[]}>(`/monsters`, {
+		params
+	})
+	if (!response) {
+		throw new Error('Failed to fetch monsters')
+	}
+	return response.data
 }
 
 
@@ -109,5 +154,9 @@ export default {
 	getItem,
 	getMapLocation,
 	craft,
-	depositToBank
+	depositToBank,
+	getBankItem,
+	withdrawFromBank,
+	taskTrade,
+	getAllMonsters
 }

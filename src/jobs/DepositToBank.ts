@@ -1,15 +1,13 @@
-import { CharacterInterface } from '../types'
 import Job from './Job'
 import http from '../http'
-import Move from './Move'
-import u from '../utils'
+import Character from '../Character'
 
 export default class DepositToBank extends Job {
 
 	code: string
 	quantity: number
 
-	constructor(character: CharacterInterface, code: string, quantity: number) {
+	constructor(character: Character, code: string, quantity: number) {
 		super(character)
 		this.code = code
 		this.quantity = quantity
@@ -18,11 +16,9 @@ export default class DepositToBank extends Job {
 	async run() {
 		console.log(`Depositing ${this.quantity} of ${this.code} to bank...`)
 		const bankLocation = await http.getMapLocation(this.character, '', 'bank')
-		await new Move(this.character, bankLocation.x, bankLocation.y).run()
+		await this.character.move(bankLocation.x, bankLocation.y)
 
-		const response = await http.depositToBank(this.character, this.code, this.quantity)
-		this.character = response.character
-		await u.awaitUntil(response.cooldown.expiration)
+		await this.character.depositToBank(this.code, this.quantity)
 
 	}
 }

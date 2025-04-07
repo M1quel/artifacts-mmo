@@ -10,8 +10,15 @@ export interface CharacterInterface {
 	mining_xp: number
 	mining_max_xp: number
 	task: string
+	task_type: TaskType
+	task_progress: number
+	task_total: number
 	x: number
 	y: number
+	inventory: SimpleItemSchema[]
+	inventory_max_items: number
+	hp: number
+	max_hp: number
 }
 export interface TaskInterface {
 	code: string
@@ -36,7 +43,7 @@ export interface ItemInterface {
 }
 
 export interface SimpleJobSchema {
-	type: 'obtain_and_deposit' | 'craft'
+	type: 'obtain_and_deposit' | 'craft' | 'progress_task' | 'idle_task'
 	code: string
 	quantity?: number
 }
@@ -122,4 +129,30 @@ export interface BankItemTransactionSchema {
 		bank: SimpleItemSchema[]
 		character: CharacterInterface
 	}
+}
+export interface MonsterSchema {
+	name: string
+	code: string
+	level: number
+	hp: number
+	attack_fire: number
+	attack_earth: number
+	attack_water: number
+	attack_air: number
+	res_fire: number
+	res_earth: number
+	res_water: number
+	res_air: number
+	critical_strike: number
+	effects: SimpleEffectSchema[]
+	min_gold: number
+	max_gold: number
+	drops: DropRateSchema[]
+}
+
+export interface DropRateSchema {
+	code: string
+	rate: number
+	min_quantity: number
+	max_quantity: number
 }

@@ -1,16 +1,15 @@
 import Job from './Job'
 import http from '../http'
-import { CharacterInterface } from '../types'
 import Obtain from './Obtain'
-import Move from './Move'
 import u from '../utils'
+import Character from '../Character'
 
 export default class Craft extends Job {
 	code: string
 	quantity: number
 
 
-	constructor(character: CharacterInterface, code: string, quantity: number) {
+	constructor(character: Character, code: string, quantity: number) {
 		super(character)
 		this.character = character
 		this.code = code
@@ -28,11 +27,9 @@ export default class Craft extends Job {
 			await new Obtain(this.character, ingredient.code, ingredient.quantity * this.quantity).run()
 		}
 		const craftLocation = await http.getMapLocation(this.character, craft.skill, 'workshop')
-		await new Move(this.character, craftLocation.x, craftLocation.y).run()
+		await this.character.move(craftLocation.x, craftLocation.y)
 
 		console.log(`Crafting ${this.quantity} of ${this.code}...`)
-		const craftResponse = await http.craft(this.character, this.code, this.quantity)
-		this.character = craftResponse.character
-		await u.awaitUntil(craftResponse.cooldown.expiration)
+		await this.character.craft(this.code, this.quantity)
 	}
 }

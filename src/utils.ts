@@ -4,9 +4,11 @@ import http from "./http"
 async function generateJobListFromTask(type: TaskType, code: string, quantity: number, stackSize: number): Promise<SimpleJobSchema[]> {
 	const jobList: SimpleJobSchema[] = []
 	if (type === 'items') {
-		const itemToObtain = await http.getItem(code)
-		const iterations = Math.ceil(quantity / stackSize)
-		for (let i = 0; i < iterations; i++) {
+		const alreadyHave = await checkStock(code)
+		console.log(`Quantity of ${code} still needed: ${quantity - alreadyHave}`)
+		const numberOfStacks = (quantity-alreadyHave) / stackSize
+		const iterations = Math.ceil(numberOfStacks)
+		for (let i = 0; i <= iterations; i++) {
 			jobList.push({
 				type: 'obtain_and_deposit',
 				code: code,
@@ -27,6 +29,14 @@ async function awaitUntil(dateString: Date): Promise<void> {
 			}
 		}, 1000)
 	})
+}
+
+async function checkStock(code: string): Promise<number> {
+	const item = await http.getBankItem(code)
+	if (!item) {
+		return 0
+	}
+	return item.quantity
 }
 
 
