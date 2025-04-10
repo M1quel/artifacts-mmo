@@ -10,11 +10,14 @@ async function generateJobListFromTask(type: TaskType, code: string, quantity: n
 		const iterations = Math.ceil(numberOfStacks)
 		for (let i = 0; i <= iterations; i++) {
 			jobList.push({
-				type: 'obtain_and_deposit',
+				type: 'item_task',
 				code: code,
 				quantity: stackSize
 			})
 		}
+	}
+	if (type === 'monsters') {
+		
 	}
 	return jobList
 }

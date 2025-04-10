@@ -1,3 +1,4 @@
+export declare module 'cors/lib/index'
 export interface CharacterInterface {
 	name: string
 	account: string
@@ -15,10 +16,25 @@ export interface CharacterInterface {
 	task_total: number
 	x: number
 	y: number
-	inventory: SimpleItemSchema[]
+	inventory: InventorySlot[]
 	inventory_max_items: number
 	hp: number
 	max_hp: number
+	attack_fire: number
+	attack_earth: number
+	attack_water: number
+	attack_air: number
+	res_fire: number
+	res_earth: number
+	res_water: number
+	res_air: number
+	dmg_fire: number
+	dmg_earth: number
+	dmg_water: number
+	dmg_air: number
+	dmg: number
+	critical_strike: number,
+	cooldown_expiration: string
 }
 export interface TaskInterface {
 	code: string
@@ -43,8 +59,8 @@ export interface ItemInterface {
 }
 
 export interface SimpleJobSchema {
-	type: 'obtain_and_deposit' | 'craft' | 'progress_task' | 'idle_task'
-	code: string
+	type: 'monster_task' | 'item_task'
+	code?: string
 	quantity?: number
 }
 
@@ -155,4 +171,105 @@ export interface DropRateSchema {
 	rate: number
 	min_quantity: number
 	max_quantity: number
+}
+
+export interface DamageCalculationSchema {
+	attack_fire: number
+	attack_earth: number
+	attack_water: number
+	attack_air: number
+	res_fire: number
+	res_earth: number
+	res_water: number
+	res_air: number
+	critical_strike: number
+	dmg?: number
+	dmg_fire?: number
+	dmg_earth?: number
+	dmg_water?: number
+	dmg_air?: number
+}
+
+export interface BeatableMonsterInterface extends MonsterSchema {
+	needs_rest: boolean
+}
+
+export interface ObjectiveSchema {
+	type: ObjectiveType
+}
+
+export type ObjectiveType = 'monster_tasks' | 'item_tasks'
+
+
+export interface CharacterFightDataSchema {
+	data: {
+		cooldown: CooldownSchema
+		fight: FightSchema
+		character: CharacterInterface
+	}
+}
+
+export interface FightSchema {
+	xp: number
+	gold: number
+	drops: DropSchema[]
+	turns: number
+	monster_blocked_hits: BlockedHitsSchema
+	player_blocked_hits: BlockedHitsSchema
+	logs: string[]
+	result: 'win' | 'loss'
+}
+
+export interface BlockedHitsSchema {
+	fire: number
+	earth: number
+	water: number
+	air: number
+	total: number
+}
+
+export interface TaskDataSchema {
+	cooldown: CooldownSchema
+	task: TaskInterface
+	character: CharacterInterface
+}
+
+export interface InventorySlot {
+	slot: number
+	code: string
+	quantity: number
+}
+
+export interface GEOrderHistorySchema {
+	order_id: string
+	seller: string
+	buyer: string
+	code: string
+	quantity: number
+	price: number
+	sold_at: string
+}
+
+export interface PaginatedList<T> {
+	data: T[]
+	total: number
+	page: number
+	size: number
+	pages: number
+}
+
+export interface GEOrderTransactionSchema {
+	cooldown: CooldownSchema
+	order: GEOrderCreatedSchema
+	character: CharacterInterface
+}
+
+export interface GEOrderCreatedSchema {
+	id: string
+	created_at: string
+	code: string
+	quantity: number
+	price: number
+	total_price: number
+	tax: number
 }

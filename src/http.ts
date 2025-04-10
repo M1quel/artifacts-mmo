@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { CharacterInterface, BankItemTransactionSchema, TaskInterface, ItemInterface, SkillType, MapSchema, CharacterMovementDataSchema, SkillDataSchema, SimpleItemSchema, MonsterSchema } from './types'
+import { CharacterInterface, GEOrderHistorySchema, GEOrderTransactionSchema, BankItemTransactionSchema, TaskInterface, ItemInterface, SkillType, MapSchema, CharacterMovementDataSchema, SkillDataSchema, SimpleItemSchema, MonsterSchema, CharacterFightDataSchema, TaskDataSchema } from './types'
 import dotenv from 'dotenv'
 import Character from './Character'
 dotenv.config()
@@ -145,6 +145,63 @@ async function getAllMonsters(opts: {max_level?: number}) {
 	return response.data
 }
 
+async function getMonster(code: string) {
+	const res = await get<{data: MonsterSchema}>(`/monsters/${code}`)
+	if (!res) {
+		throw new Error(`Failed to fetch monster ${code}`)
+	}
+	return res.data
+}
+
+async function rest(character: Character) {
+	const res = await post<SkillDataSchema>(`/my/${character.name}/action/rest`)
+	if (!res) {
+		throw new Error('Failed to rest')
+	}
+	return res.data
+}
+
+async function fight(character: Character) {
+	const res = await post<CharacterFightDataSchema>(`/my/${character.name}/action/fight`)
+	if (!res) {
+		throw new Error('Failed to fight')
+	}
+	return res.data
+}
+
+async function newTask(character: Character) {
+	const res = await post<{data: TaskDataSchema}>(`/my/${character.name}/action/task/new`)
+	if (!res) {
+		throw new Error('Failed to create new task')
+	}
+	return res.data
+}
+
+async function getItemPrice(code: string) {
+	const res = await get<{data: GEOrderHistorySchema[]}>(`/grandexchange/history/${code}`)
+	if (!res) {
+		throw new Error(`Failed to fetch item ${code}`)
+	}
+	const quantitySold = res.data.reduce((acc, curr) => acc + curr.quantity, 0)
+	const totalPrice = res.data.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0)
+	const averagePrice = Math.floor(totalPrice / quantitySold)
+	if (averagePrice > 1) {
+		return averagePrice-1
+	}
+	return 1
+}
+
+async function listItemOnGE(character: Character, code: string, quantity: number, pricePerItem: number) {
+	const res = await post<{data: GEOrderTransactionSchema}>(`/my/${character.name}/action/grandexchange/sell`, {
+		code,
+		quantity,
+		price: pricePerItem
+	})
+	if (!res) {
+		throw new Error('Failed to list item on GE')
+	}
+	return res.data
+}
 
 export default {
 	getCharacter,
@@ -158,5 +215,11 @@ export default {
 	getBankItem,
 	withdrawFromBank,
 	taskTrade,
-	getAllMonsters
+	getAllMonsters,
+	getMonster,
+	rest,
+	fight,
+	newTask,
+	getItemPrice,
+	listItemOnGE
 }
